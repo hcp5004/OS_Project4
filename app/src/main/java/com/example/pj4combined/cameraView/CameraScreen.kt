@@ -50,10 +50,27 @@ fun CameraScreen() {
     val detectionResults = remember { mutableStateOf<DetectionResult?>(null) }
     val errorMessage = remember { mutableStateOf<String?>(null) }
 
+    // ===== Project 4 =====
+    val SumofInferenceTime = remember { mutableStateOf<Long>(0L) }
+    val CntInferenceTime = remember { mutableStateOf<Long>(0)}
+    // ===== Project 4 =====
+
     val listener = remember {
         DetectorListener(
-            onDetectionResult = { results -> detectionResults.value = results },
+            onDetectionResult = { results ->
+                detectionResults.value = results
+                // ===== Project 4 =====
+                val InferenceTime = results.inferenceTime
+                SumofInferenceTime.value += InferenceTime
+                CntInferenceTime.value ++
+
+                val AvgInferenceTime = SumofInferenceTime.value / CntInferenceTime.value
+                Log.d("CS330", "Average Inference Time is $AvgInferenceTime")
+                // ===== Project 4 =====
+            },
             onDetectionError = { error -> errorMessage.value = error }
+
+
         )
     }
 
@@ -104,15 +121,30 @@ fun CameraScreen() {
     if (detectionResults.value != null) {
         // TODO:
         //  Choose your inference time threshold
-        val inferenceTimeThreshold = 200000
+        val inferenceTimeThreshold = 500
 
         if (detectionResults.value!!.inferenceTime > inferenceTimeThreshold) {
             Log.d("CS330", "GPU too slow, switching to CPU start")
+
+            SumofInferenceTime.value = 0L
+            CntInferenceTime.value = 0
+
             // TODO:
             //  Create new classifier to be run on CPU with 2 threads
+            val personClassifierCPU = PersonClassifier()
+            personClassifierCPU.initialize(context, useGPU = false, threadNumber = 2)
+            personClassifierCPU.setDetectorListener(listener)
+
 
             // TODO:
             //  Set imageAnalyzer to use the new classifier
+
+            // The analyzer can then be assigned to the instance
+            imageAnalyzer.setAnalyzer(cameraExecutor) { image ->
+                detectObjects(image, personClassifierCPU)
+                // Close the image proxy
+                image.close()
+            }
 
             Log.d("CS330", "GPU too slow, switching to CPU done")
         }
