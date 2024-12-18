@@ -52,6 +52,7 @@ fun CameraScreen() {
 
     // ===== Project 4 =====
     val SumofInferenceTime = remember { mutableStateOf<Long>(0L) }
+    val SumofSquaredInferenceTime = remember { mutableStateOf<Long>(0L) }
     val CntInferenceTime = remember { mutableStateOf<Long>(0)}
     // ===== Project 4 =====
 
@@ -62,10 +63,22 @@ fun CameraScreen() {
                 // ===== Project 4 =====
                 val InferenceTime = results.inferenceTime
                 SumofInferenceTime.value += InferenceTime
+                SumofSquaredInferenceTime.value += InferenceTime * InferenceTime
                 CntInferenceTime.value ++
 
-                val AvgInferenceTime = SumofInferenceTime.value / CntInferenceTime.value
-                Log.d("CS330", "Average Inference Time is $AvgInferenceTime")
+                if (CntInferenceTime.value % 50 == 0L) {
+                    val AvgInferenceTime = SumofInferenceTime.value / CntInferenceTime.value
+                    Log.d("CS330", "Average Inference Time is $AvgInferenceTime")
+
+                    val mean = SumofInferenceTime.value / CntInferenceTime.value
+                    val variance = (SumofSquaredInferenceTime.value - (mean * mean * CntInferenceTime.value)) / CntInferenceTime.value.toDouble()
+                    val stdDev = Math.sqrt(variance)
+                    Log.d("CS330", "Standard Deviation of Inference Times is $stdDev")
+
+                    SumofInferenceTime.value = 0L
+                    SumofSquaredInferenceTime.value = 0L
+                    CntInferenceTime.value = 0L
+                }
                 // ===== Project 4 =====
             },
             onDetectionError = { error -> errorMessage.value = error }
@@ -128,6 +141,7 @@ fun CameraScreen() {
 
             SumofInferenceTime.value = 0L
             CntInferenceTime.value = 0
+            SumofSquaredInferenceTime.value = 0L
 
             // TODO:
             //  Create new classifier to be run on CPU with 2 threads
