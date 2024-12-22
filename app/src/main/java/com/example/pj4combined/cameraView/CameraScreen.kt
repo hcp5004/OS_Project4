@@ -147,6 +147,7 @@ fun CameraScreen() {
             //  Create new classifier to be run on CPU with 2 threads
             val personClassifierCPU = PersonClassifier()
             personClassifierCPU.initialize(context, useGPU = false, threadNumber = 2)
+            // ...
             personClassifierCPU.setDetectorListener(listener)
 
 
