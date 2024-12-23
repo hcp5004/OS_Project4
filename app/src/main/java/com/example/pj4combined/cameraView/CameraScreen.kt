@@ -155,6 +155,7 @@ fun CameraScreen() {
             //  Set imageAnalyzer to use the new classifier
 
             // The analyzer can then be assigned to the instance
+            imageAnalyzer.clearAnalyzer()
             imageAnalyzer.setAnalyzer(cameraExecutor) { image ->
                 detectObjects(image, personClassifierCPU)
                 // Close the image proxy
